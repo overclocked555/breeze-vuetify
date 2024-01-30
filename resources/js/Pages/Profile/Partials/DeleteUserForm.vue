@@ -1,67 +1,85 @@
 <script setup>
+import { useForm } from '@inertiajs/vue3';
+import { nextTick, ref } from 'vue';
 import DangerButton from '@/Components/DangerButton.vue';
 import InputError from '@/Components/InputError.vue';
 import InputLabel from '@/Components/InputLabel.vue';
 import Modal from '@/Components/Modal.vue';
+import PrimaryButton from '@/Components/PrimaryButton.vue';
 import SecondaryButton from '@/Components/SecondaryButton.vue';
 import TextInput from '@/Components/TextInput.vue';
-import { useForm } from '@inertiajs/vue3';
-import { nextTick, ref } from 'vue';
 
 const confirmingUserDeletion = ref(false);
 const passwordInput = ref(null);
 
 const form = useForm({
-    password: '',
+  password: '',
 });
 
 const confirmUserDeletion = () => {
-    confirmingUserDeletion.value = true;
+  confirmingUserDeletion.value = true;
 
-    nextTick(() => passwordInput.value.focus());
+  nextTick(() => passwordInput.value.focus());
 };
 
-const deleteUser = () => {
-    form.delete(route('profile.destroy'), {
-        preserveScroll: true,
-        onSuccess: () => closeModal(),
-        onError: () => passwordInput.value.focus(),
-        onFinish: () => form.reset(),
-    });
+const submit = () => {
+  form.delete(route('profile.destroy'), {
+    preserveScroll: true,
+    onSuccess: () => closeModal(),
+    onError: () => passwordInput.value.focus(),
+    onFinish: () => form.reset(),
+  });
 };
 
 const closeModal = () => {
-    confirmingUserDeletion.value = false;
+  confirmingUserDeletion.value = false;
 
-    form.reset();
+  form.reset();
 };
 </script>
 
 <template>
-    <section class="space-y-6">
-        <header>
-            <h2 class="text-lg font-medium text-gray-900">Delete Account</h2>
+  <section class="space-y-6">
+    <header>
+      <h2 class="text-lg font-medium text-gray-900">
+        Delete Account
+      </h2>
 
-            <p class="mt-1 text-sm text-gray-600">
-                Once your account is deleted, all of its resources and data will be permanently deleted. Before deleting
-                your account, please download any data or information that you wish to retain.
-            </p>
-        </header>
+      <p class="mt-1 text-sm text-gray-600">
+        Once your account is deleted, all of its resources and data will be permanently deleted. Before deleting
+        your account, please download any data or information that you wish to retain.
+      </p>
+    </header>
 
-        <DangerButton @click="confirmUserDeletion">Delete Account</DangerButton>
+    <!-- <DangerButton @click="confirmUserDeletion">
+      Delete Account
+    </DangerButton> -->
 
-        <Modal :show="confirmingUserDeletion" @close="closeModal">
-            <div class="p-6">
-                <h2 class="text-lg font-medium text-gray-900">
-                    Are you sure you want to delete your account?
-                </h2>
+    <primary-button
+      color="red"
+      @click="confirmUserDeletion"
+    >
+      Delete Account
+    </primary-button>
 
-                <p class="mt-1 text-sm text-gray-600">
-                    Once your account is deleted, all of its resources and data will be permanently deleted. Please
-                    enter your password to confirm you would like to permanently delete your account.
-                </p>
+    <Modal
+      :show="confirmingUserDeletion"
+      @close="closeModal"
+    >
+      <form
+        class="p-6"
+        @submit.prevent="submit"
+      >
+        <h2 class="text-lg font-medium text-gray-900">
+          Are you sure you want to delete your account?
+        </h2>
 
-                <div class="mt-6">
+        <p class="mt-1 text-sm text-gray-600">
+          Once your account is deleted, all of its resources and data will be permanently deleted. Please
+          enter your password to confirm you would like to permanently delete your account.
+        </p>
+
+        <!-- <div class="mt-6">
                     <InputLabel for="password" value="Password" class="sr-only" />
 
                     <TextInput
@@ -71,25 +89,51 @@ const closeModal = () => {
                         type="password"
                         class="mt-1 block w-3/4"
                         placeholder="Password"
-                        @keyup.enter="deleteUser"
+                        @keyup.enter="submit"
                     />
 
                     <InputError :message="form.errors.password" class="mt-2" />
-                </div>
+                </div> -->
 
-                <div class="mt-6 flex justify-end">
-                    <SecondaryButton @click="closeModal"> Cancel </SecondaryButton>
+        <text-input
+          ref="passwordInput"
+          v-model="form.password"
+          autocomplete="current-password"
+          class="mt-6"
+          :error-messages="form.errors.password"
+          label="Password"
+          required
+          type="password"
+        />
 
-                    <DangerButton
-                        class="ms-3"
-                        :class="{ 'opacity-25': form.processing }"
-                        :disabled="form.processing"
-                        @click="deleteUser"
-                    >
-                        Delete Account
-                    </DangerButton>
-                </div>
-            </div>
-        </Modal>
-    </section>
+        <div class="mt-6 flex justify-end">
+          <!-- <SecondaryButton @click="closeModal">
+            Cancel
+          </SecondaryButton> -->
+          <primary-button
+            variant="outlined"
+            @click="closeModal"
+          >
+            Cancel
+          </primary-button>
+
+          <!-- <DangerButton
+            class="ms-3"
+            :class="{ 'opacity-25': form.processing }"
+            :disabled="form.processing"
+            type="submit"
+          >
+            Delete Account
+          </DangerButton> -->
+          <primary-button
+            color="red"
+            :disabled="form.processing"
+            type="submit"
+          >
+            Delete Account
+          </primary-button>
+        </div>
+      </form>
+    </Modal>
+  </section>
 </template>
